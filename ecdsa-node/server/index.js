@@ -1,15 +1,16 @@
-const express = require("express");
+import express from "express";
 const app = express();
-const cors = require("cors");
+import cors from "cors";
 const port = 3042;
-
+import { secp256k1 } from "ethereum-cryptography/secp256k1.js";
+import { keccak256 } from "ethereum-cryptography/keccak";
 app.use(cors());
 app.use(express.json());
 
 const balances = {
-  "02d96b70e7c196026d2ffa7498760fbcd377df5df9bab29093c5686f9d2da07f7a": 100,
-  "0335b0967284500a78f1f99437f16bb4deb4a6dda0e4e425b68a1177e296e394d4": 50,
-  "0366bef2d6a433cdb612ad6c53cfba87d58319a0a3e7934856ca311ccf3e1820af": 75,
+  "027a64b4d49b495591ef2c8900bbf39303118b13fdba909df945af7a058dfb3b28": 100,
+  "0281592817819958c2e3d6d1d4ce1550ffcd6aae776aef6337f68b5b86cf022a0a": 50,
+  "027a64b4d49b495591ef2c8900bbf39303118b13fdba909df945af7a058dfb3b28": 75,
 };
 
 app.get("/balance/:address", (req, res) => {
@@ -19,7 +20,19 @@ app.get("/balance/:address", (req, res) => {
 });
 
 app.post("/send", (req, res) => {
-  const { sender, recipient, amount } = req.body;
+  const { sender, sig: sigStringed, msg } = req.body;
+  const { recipient, amount } = msg;
+
+  const sig = {
+    ...sigStringed,
+    r: BigInt(sigStringed.r),
+    s: BigInt(sigStringed.s),
+  };
+  const hashMessage = (message) => keccak256(Uint8Array.from(message));
+
+  const isValid = secp256k1.verify(sig, hashMessage(msg), sender) === true;
+
+  if (!isValid) res.status(400).send({ message: "Bad signature!" });
 
   setInitialBalance(sender);
   setInitialBalance(recipient);

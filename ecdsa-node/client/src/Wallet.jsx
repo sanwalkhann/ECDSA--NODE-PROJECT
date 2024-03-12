@@ -1,22 +1,13 @@
-import { secp256k1 } from "ethereum-cryptography/secp256k1";
-import { toHex } from "ethereum-cryptography/utils";
-
 import server from "./server";
+import { secp256k1 } from "ethereum-cryptography/secp256k1.js";
+import { hexToBytes, toHex, utf8ToBytes } from "ethereum-cryptography/utils.js";
 
-function Wallet({ address, setAddress, balance, setBalance, privateKey , setprivateKey}) {
-  async function onChange(evt) {
+function Wallet({ address, setAddress, balance, setBalance,privateKey,setPrivateKey  }) {
+  async function onChange(evt) { 
     const privateKey = evt.target.value;
-    setprivateKey(privateKey);
-    console.log('====================================');
-    console.log(privateKey);
-    console.log('====================================');
-
-    const address = toHex(secp256k1.getPublicKey(privateKey));
+    setPrivateKey(privateKey);
+    const address = toHex(secp256k1.getPublicKey(privateKey))
     setAddress(address)
-    console.log('====================================');
-    console.log(address);
-    console.log('====================================');
-     
     if (address) {
       const {
         data: { balance },
@@ -33,15 +24,10 @@ function Wallet({ address, setAddress, balance, setBalance, privateKey , setpriv
 
       <label>
         Private Key
-        <input placeholder="Type a Private Key" value={privateKey} onChange={onChange}></input>
+        <input placeholder="Type a Private key" value={privateKey} onChange={onChange}></input>
       </label>
 
-
-      <div>
-      Address : {address.slice(0,20)}
-      </div>
-
-
+      <div>address : {address.slice(0,10)}...</div>
 
       <div className="balance">Balance: {balance}</div>
     </div>
